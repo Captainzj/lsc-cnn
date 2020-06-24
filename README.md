@@ -15,7 +15,7 @@ $ pip install -r requirement.txt
 $ python run-image.py
 ```
 
-或者 View at `simple_example.ipynb`
+Or view at `simple_example.ipynb`
 
 
 ### 视频检测
