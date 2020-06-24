@@ -191,10 +191,19 @@ class LSCCNN(nn.Module):
             image = cv2.resize(image, (image.shape[1]//16*16, image.shape[0]//16*16))
         img_tensor = torch.from_numpy(image.transpose((2, 0, 1)).astype(np.float32)).unsqueeze(0)
         with torch.no_grad():
-            out = self.forward(img_tensor.cuda())
+            if torch.cuda.is_available():
+                out = self.forward(img_tensor.cuda())
+            else:
+                out = self.forward(img_tensor)
         out = get_upsample_output(out, self.output_downscale)
         pred_dot_map, pred_box_map = get_box_and_dot_maps(out, nms_thresh, self.BOXES)
         img_out = get_boxed_img(image, pred_box_map, pred_box_map, pred_dot_map, self.output_downscale,
                                 self.BOXES, self.BOX_SIZE_BINS, thickness=thickness, multi_colours=multi_colours)
+        # print("type(pred_dot_map):", type(pred_dot_map))  # gt_pred_map
+        # print("type(pred_box_map):", type(pred_box_map))  # h_map, w_map
+        # print("len(pred_dot_map):", len(pred_dot_map))
+        # print("len(pred_box_map):", len(pred_box_map))
+        # import pdb
+        # pdb.set_trace()
         return pred_dot_map, pred_box_map, img_out
 

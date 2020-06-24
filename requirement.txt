@@ -1,0 +1,4 @@
+six
+numpy
+opencv-python
+torch==1.5.0

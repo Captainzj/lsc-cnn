@@ -27,11 +27,18 @@ def upsample_single(input_, factor=2):
     indices_up = indices.clone()
     # Corner case!
     if indices_up.size(0) == 0:
-        return torch.zeros(input_.size(0),input_.size(1), input_.size(2)*factor, input_.size(3)*factor).cuda()
+        if torch.cuda.is_available():
+            return torch.zeros(input_.size(0),input_.size(1), input_.size(2)*factor, input_.size(3)*factor).cuda()
+        else:
+            return torch.zeros(input_.size(0),input_.size(1), input_.size(2)*factor, input_.size(3)*factor)
+
     indices_up[:, 2] *= factor
     indices_up[:, 3] *= factor
+    if torch.cuda.is_available():
+        output = torch.zeros(input_.size(0),input_.size(1), input_.size(2)*factor, input_.size(3)*factor).cuda()
+    else:
+        output = torch.zeros(input_.size(0),input_.size(1), input_.size(2)*factor, input_.size(3)*factor)
 
-    output = torch.zeros(input_.size(0),input_.size(1), input_.size(2)*factor, input_.size(3)*factor).cuda()
     output[indices_up[:, 0], indices_up[:, 1], indices_up[:, 2], indices_up[:, 3]] = input_[indices[:, 0], indices[:, 1], indices[:, 2], indices[:, 3]]
 
     output[indices_up[:, 0], channels-1, indices_up[:, 2]+1, indices_up[:, 3]] = 1.0
@@ -51,6 +58,7 @@ def get_upsample_output(model_output, output_downscale):
         upsample_out = out
         for n in range(upsample_max - idx):
             upsample_out = upsample_single(upsample_out, factor=2)
+
         upsample_pred.append(upsample_out.cpu().data.numpy().squeeze(0))
     return upsample_pred
 
